@@ -30,16 +30,19 @@ async def set_admin_done(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def add_acc_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_user.id, OWNER_ID):
         return ConversationHandler.END
-    await update.message.reply_text("Instagram Phone/Username দিন:")
+    await update.message.reply_text(
+        "Instagram Username অথবা Phone Number দিন:\n"
+        "(যেকোনো একটি দিলেই হবে)"
+    )
     return ASK_PHONE
 
 async def add_acc_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data["phone"] = update.message.text
+    context.user_data["phone"] = update.message.text.strip()
     await update.message.reply_text("Password দিন:")
     return ASK_PASS
 
 async def add_acc_pass(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    add_account(context.user_data["phone"], update.message.text)
+    add_account(context.user_data["phone"], update.message.text.strip())
     await update.message.reply_text("✅ অ্যাকাউন্ট যোগ হয়েছে।")
     return ConversationHandler.END
 
@@ -47,7 +50,10 @@ async def add_acc_pass(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def remove_acc_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_admin(update.effective_user.id, OWNER_ID):
         return ConversationHandler.END
-    await update.message.reply_text("Phone ও Password একসাথে পাঠান (স্পেস দিয়ে):")
+    await update.message.reply_text(
+        "Username/Phone ও Password একসাথে পাঠান (স্পেস দিয়ে):\n"
+        "যেমন: myusername mypassword"
+    )
     return ASK_REMOVE
 
 async def remove_acc_done(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -56,7 +62,7 @@ async def remove_acc_done(update: Update, context: ContextTypes.DEFAULT_TYPE):
         remove_account(parts[0], parts[1])
         await update.message.reply_text("✅ রিমুভ হয়েছে।")
     else:
-        await update.message.reply_text("❌ ফরম্যাট ভুল। Phone Password দিন।")
+        await update.message.reply_text("❌ ফরম্যাট ভুল। Username/Phone Password দিন।")
     return ConversationHandler.END
 
 # ---------- Admin: Check Accounts ----------
