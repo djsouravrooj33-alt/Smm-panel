@@ -3,16 +3,28 @@ from instagrapi import Client
 from database import get_accounts, supabase
 
 def get_client_for_account(account: dict):
+    """
+    account dict-এ 'phone' ফিল্ডে username বা phone — যেকোনো একটি থাকতে পারে।
+    instagrapi-র login() দুটোই হ্যান্ডেল করে।
+    """
     cl = Client()
     if account.get("session_data"):
         try:
             cl.load_settings(json.loads(account["session_data"]))
         except Exception:
             pass
-    cl.login(account["phone"], account["password"])
-    # নতুন session Supabase-এ সেভ
+
+    username_or_phone = account["phone"]
+    password = account["password"]
+
+    cl.login(username_or_phone, password)
+
+    # নতুন session Supabase-এ সেভ (বারবার লগইন এড়াতে)
     new_session = json.dumps(cl.get_settings())
-    supabase.table("accounts").update({"session_data": new_session}).eq("id", account["id"]).execute()
+    supabase.table("accounts").update(
+        {"session_data": new_session}
+    ).eq("id", account["id"]).execute()
+
     return cl
 
 def do_follow(target_username: str, count: int):
